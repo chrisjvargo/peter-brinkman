@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guest Chat: Peter Brinkman, Assembly Global | APRD 3002</title>
+<style>
+  :root{
+    --ink:#141414; --paper:#ffffff; --blue:#1246a0; --amber:#f5b301;
+    --grey:#5a5a5a; --line:#d9d9d9; --soft:#f2f2f0; --red:#b3271e;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    color:var(--ink); background:var(--paper); overflow:hidden;
+  }
+  .deck{position:relative;height:100vh;width:100vw}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:4.5vh 6vw 7vh 6vw; overflow-y:auto;
+  }
+  .slide.active{display:flex}
+  .kicker{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--blue); margin-bottom:14px;
+  }
+  h1{font-family:Georgia,"Times New Roman",serif; font-weight:700; font-size:clamp(34px,4.6vw,58px); line-height:1.05; letter-spacing:-.01em}
+  h2{font-family:Georgia,"Times New Roman",serif; font-weight:700; font-size:clamp(28px,3.6vw,44px); line-height:1.1; margin-bottom:18px}
+  h3{font-size:19px; font-weight:700; margin-bottom:8px}
+  p,li{font-size:clamp(16px,1.55vw,21px); line-height:1.45}
+  p{margin-bottom:14px}
+  ul{margin:0 0 14px 22px}
+  li{margin-bottom:8px}
+  .lead{font-size:clamp(19px,2vw,26px); line-height:1.4; max-width:52ch}
+  .small{font-size:14px; color:var(--grey); line-height:1.5}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .rule{border:none;border-top:3px solid var(--ink); margin:18px 0 22px 0; width:100%}
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:4vw; align-items:start}
+  .cols3{display:grid; grid-template-columns:repeat(3,1fr); gap:2.5vw; align-items:start}
+  @media(max-width:900px){.cols,.cols3{grid-template-columns:1fr}}
+  .statgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:18px; margin:20px 0}
+  .stat{border-top:3px solid var(--ink); padding-top:10px}
+  .stat .n{font-family:Georgia,serif; font-size:clamp(30px,3.4vw,46px); font-weight:700; line-height:1}
+  .stat .l{font-size:13.5px; color:var(--grey); margin-top:6px; line-height:1.4}
+  .stat.blue{border-top-color:var(--blue)} .stat.blue .n{color:var(--blue)}
+  .stat.amber{border-top-color:var(--amber)}
+  table{width:100%; border-collapse:collapse; font-size:15.5px; margin:12px 0}
+  th{font-family:ui-monospace,Menlo,monospace; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+     text-align:right; padding:8px 10px; border-bottom:2.5px solid var(--ink); color:var(--ink)}
+  th:first-child{text-align:left}
+  td{padding:8px 10px; border-bottom:1px solid var(--line); text-align:right; font-variant-numeric:tabular-nums}
+  td:first-child{text-align:left; font-weight:600}
+  tr.hl td{background:#eef3fb; font-weight:700}
+  .box{background:var(--soft); padding:18px 20px; margin:14px 0}
+  .box.warn{background:#fdf3e7; border-left:5px solid var(--amber)}
+  .box.stop{background:#fbeeec; border-left:5px solid var(--red)}
+  .box .t{font-weight:700; margin-bottom:6px}
+  .box p:last-child{margin-bottom:0}
+  .wall{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; margin:16px 0}
+  .wall figure{border:1px solid var(--line); background:#fff}
+  .wall img{width:100%; height:150px; object-fit:cover; display:block}
+  .wall figcaption{font-size:12px; color:var(--grey); padding:7px 9px; font-family:ui-monospace,Menlo,monospace}
+  .card{border:1.5px solid var(--ink); padding:16px 18px; margin-bottom:14px; background:#fff}
+  .card .hd{display:flex; justify-content:space-between; gap:12px; font-family:ui-monospace,Menlo,monospace; font-size:12.5px; color:var(--grey); margin-bottom:8px}
+  .card .ttl{font-weight:700; font-size:17px; margin-bottom:5px}
+  .card .bdy{font-size:15.5px; line-height:1.45}
+  .card .lnk{font-size:13px; color:var(--blue); margin-top:7px; font-family:ui-monospace,Menlo,monospace}
+  svg.chart{width:100%; height:auto; display:block; margin:10px 0}
+  .chartnote{font-size:13.5px; color:var(--grey); margin-top:4px}
+  .hud{
+    position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:space-between; align-items:center;
+    padding:10px 20px; font-family:ui-monospace,Menlo,monospace; font-size:12.5px; color:var(--grey);
+    background:linear-gradient(to top, rgba(255,255,255,.96), rgba(255,255,255,0)); z-index:50; pointer-events:none;
+  }
+  .hud button{pointer-events:auto; font:inherit; background:#fff; border:1.5px solid var(--ink); color:var(--ink);
+    padding:5px 12px; cursor:pointer; margin-left:8px}
+  .hud button:hover{background:var(--ink); color:#fff}
+  #bar{position:fixed; top:0; left:0; height:4px; background:var(--amber); z-index:60; width:0%}
+  .notes{display:none; margin-top:22px; border-top:2px dashed var(--blue); padding-top:14px}
+  body.shownotes .notes{display:block}
+  .notes .t{font-family:ui-monospace,Menlo,monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--blue); margin-bottom:8px}
+  .notes p,.notes li{font-size:15px}
+  .bigq{font-family:Georgia,serif; font-size:clamp(24px,3vw,38px); line-height:1.25; font-style:italic; max-width:26ch}
+  .tag{display:inline-block; font-family:ui-monospace,Menlo,monospace; font-size:11.5px; letter-spacing:.08em;
+       border:1.5px solid var(--ink); padding:3px 8px; margin-right:6px; text-transform:uppercase}
+  .tag.b{border-color:var(--blue); color:var(--blue)} .tag.r{border-color:var(--red); color:var(--red)}
+  .flow{display:flex; flex-wrap:wrap; gap:10px; align-items:stretch; margin:16px 0}
+  .flow .step{flex:1 1 150px; border:1.5px solid var(--ink); padding:12px 14px}
+  .flow .step .s{font-family:ui-monospace,Menlo,monospace; font-size:11.5px; color:var(--blue); letter-spacing:.1em; text-transform:uppercase}
+  .flow .step .v{font-weight:700; font-size:16.5px; margin-top:4px}
+  .flow .arr{align-self:center; font-size:22px; font-weight:700}
+  @media print{
+    body{overflow:visible} .deck{height:auto}
+    .slide{display:flex !important; position:static; page-break-after:always; overflow:visible; min-height:95vh}
+    .hud,#bar{display:none} .notes{display:block}
+  }
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div class="deck" id="deck">
+
+<!-- 1 TITLE -->
+<section class="slide">
+  <div class="kicker">APRD 3002 · Guest chat · Tue Oct 20, 2026</div>
+  <h1>Meet Peter Brinkman</h1>
+  <hr class="rule">
+  <p class="lead"><strong>Senior Manager, VAD (Connected Partnerships) at Assembly Global</strong> — Stagwell's media agency. Programmatic trader turned partnerships lead. CU Boulder alum, twice over.</p>
+  <p>His own bio, because it's better than anything I'd write: <em>"Lover of custom bid strategies, ad tech developments, reaching users in new and unique ways, overachieving KPI's, petting kitties, and insightful data analysis."</em></p>
+  <p>Format today: informal. I'll tee up the big questions, Peter talks, you jump in. The best questions in this room will not be mine — have yours ready by the halfway mark.</p>
+  <p class="small">Sources: public profiles (TheOrg org chart; LinkedIn via public mirror), Assembly/Wayback career pages, Oct 2026. Peter: anything wrong on these slides, correct it live — that's data hygiene too.</p>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Confirm live: remote vs. in-room logistics, exact current title/remit (VAD expansion + Connected Partnerships scope were not publicly documented beyond TheOrg title — ask him to define). Identity note: NOT the Maxell/Casio VP of the same name from 1990s-2000s trade press.</p>
+  </div>
+</section>
+
+<!-- 2 TIMELINE -->
+<section class="slide">
+  <div class="kicker">The road here</div>
+  <h2>Anthropology, cinema, snow shovels — then a trading desk</h2>
+  <div class="flow">
+    <div class="step"><div class="s">CU Boulder</div><div class="v">BA Anthropology + Cinema Studies</div></div><div class="arr">→</div>
+    <div class="step"><div class="s">2019–2020</div><div class="v">CU Outdoor Services — turf, waste, snow removal (student job)</div></div><div class="arr">→</div>
+    <div class="step"><div class="s">CU Boulder, again</div><div class="v">MS Marketing Analytics</div></div>
+  </div>
+  <div class="flow">
+    <div class="step"><div class="s">May 2021</div><div class="v">Associate Programmatic Trader, Assembly Global</div></div><div class="arr">→</div>
+    <div class="step"><div class="s">Mar 2022</div><div class="v">Programmatic Manager, Jellyfish</div></div><div class="arr">→</div>
+    <div class="step"><div class="s">Jun 2022</div><div class="v">Back to Assembly — Manager, Programmatic (the boomerang)</div></div><div class="arr">→</div>
+    <div class="step"><div class="s">Now</div><div class="v">Senior Manager, VAD (Connected Partnerships)</div></div>
+  </div>
+  <p>Five years from first trading-desk seat to senior manager. For a room full of APRD majors, the interesting part isn't the speed — it's that the degree path was <strong>anthropology and film, then analytics</strong>, and one of the stops involved a snowplow.</p>
+  <div class="box"><div class="t">First question for Peter</div><p>What did anthropology and cinema teach you that the analytics degree didn't — and does any of it show up in how you read an audience or a supply path today?</p></div>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Timeline from public work-history mirror; Assembly hired programmatic via Lever in his era (2022 board captures exist; his exact 2021 Associate posting text isn't separately archived). Role-family JDs for Assembly programmatic managers stress portfolio delivery + business-objective-led strategy — use as prompt, not as claim about his posting.</p>
+  </div>
+</section>
+
+<!-- 3 THE JOB -->
+<section class="slide">
+  <div class="kicker">The seat</div>
+  <h2>What does a trading desk actually do all day?</h2>
+  <div class="cols">
+    <div>
+      <h3>What we teach in here</h3>
+      <ul>
+        <li>DSPs, seats, and fees (that Trade Desk seat-economics lesson still stings).</li>
+        <li>Custom bid strategies and goal-based optimization — you met the cousin of this in the Brandzooka lab last week.</li>
+        <li>CTV and connected supply, supply-path transparency, brand-safety floors.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>What only Peter can tell us</h3>
+      <ul>
+        <li>What does your Monday actually look like? How many campaigns, how many fires?</li>
+        <li>What does "Connected Partnerships" own that a trader doesn't — publishers, PMPs, curation deals?</li>
+        <li>How much of the job is now the algorithm, and where do humans still beat it cold?</li>
+        <li>What does Assembly inside Stagwell change — shared tech, shared deals, shared headaches?</li>
+      </ul>
+    </div>
+  </div>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Anchor to Oct 15 Brandzooka goal-optimization discussion and Oct 13 CTV lecture. Keep this slide as scaffolding, don't lecture it — Peter is the content.</p>
+  </div>
+</section>
+
+<!-- 4 REBRAND -->
+<section class="slide">
+  <div class="kicker">First, some news</div>
+  <h2>Your agency changed its name two weeks ago</h2>
+  <p class="lead">On Oct 6, Stagwell retired the Assembly brand and relaunched its media business as <strong>Stagwell Media</strong> — roughly 2,300 people, 50+ markets, roster anchors named in the launch coverage: Lenovo, Mastercard, DP World, and P&amp;G.</p>
+  <ul>
+    <li>Peter, day to day: what actually changed for your desk — same deals, new letterhead, or real consolidation?</li>
+    <li>Does a holding-company rebrand change how publishers and DSPs treat your spend?</li>
+    <li>Students applying this year will apply to "Stagwell Media," not "Assembly." What should they know about where the programmatic jobs sit now?</li>
+  </ul>
+  <p class="small">Source: Oct 2026 trade coverage of the Stagwell Media launch (Assembly leadership continuing under the new name). If any of this is already stale, Peter gets to correct the professor on slide 4.</p>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Verify live: his title under the new banner may have changed since TheOrg listing. Keep light — two minutes, then into the client work.</p>
+  </div>
+</section>
+
+<!-- 5 LIQUID DEATH META -->
+<section class="slide">
+  <div class="kicker">Client file · Liquid Death on Meta</div>
+  <h2>1,419 ads in the public library. We read the recent ones.</h2>
+  <div class="statgrid">
+    <div class="stat"><div class="n">1,419</div><div class="l">ads on the Liquid Death Page in Meta's Ad Library (US, all statuses) — pulled live for this class</div></div>
+    <div class="stat blue"><div class="n">19 / 30</div><div class="l">still active in the 30 most recent collated creatives we harvested</div></div>
+    <div class="stat"><div class="n">17 IG-only</div><div class="l">of 30 — Instagram-first buying, 12 cross-posted to Facebook, 1 Facebook-only</div></div>
+    <div class="stat amber"><div class="n">SHOP_NOW ×27</div><div class="l">dominant CTA; 17 of 30 land on Amazon via ampd.to retail links, 9 on liquiddeath.com</div></div>
+  </div>
+  <div class="wall" data-wall="ld_meta"></div>
+  <p>Recent copy, verbatim: <em>"YOU WON'T BELIEVE IT'S NOT CANDY"</em> (Soda-Flavored Sparkling Water, Oct 7) · <em>"Easy-Drinking Energy For People-Drinking Vampires"</em> · <em>"For the mommas who need the smoke break but don't actually smoke…"</em> — and catalog-template ads literally carrying <span class="mono">{{product.brand}}</span> placeholders.</p>
+  <div class="box"><div class="t">Ask Peter</div><p>How much of this is the famous Liquid Death entertainment machine vs. a quiet Amazon retail-media engine underneath? Those ampd.to links say the scoreboard is Amazon carts, not likes. Who's right?</p></div>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Method: Meta Ad Library harvest via the course research pipeline on gpu3 (Page ID 2012750189007245, US library, harvested Oct 2026). Library count 1,419; sample = first 30 collated creatives. Oldest in sample Apr 2020 ("Now at 7-Eleven," 2021). ampd.to = retail click routing/measurement toward Amazon listings. {{product.brand}} = dynamic catalog template tokens visible in the library snapshot.</p>
+  </div>
+</section>
+
+<!-- 6 LIQUID DEATH TV -->
+<section class="slide">
+  <div class="kicker">Client file · Liquid Death on TV</div>
+  <h2>The Super Bowl brand that also buys like a DTC startup</h2>
+  <div class="wall" data-wall="ld_tv"></div>
+  <p>Twelve current TV spots from iSpot: <strong>Super Bowl 2025 "Safe for Work," Super Bowl 2026 "Exploding Heads,"</strong> "Kegs for Pregs" with Kylie Kelce, "One-Tenth of Tony Hawk," a Pop-Tarts collab ("Carnage Iced Tea"), and "The Official Iced Tea of Arizona Nebraska" — which is not a place, and that's the point.</p>
+  <div class="box"><div class="t">Ask Peter</div><p>Linear Super Bowl spots on one end, Instagram SHOP_NOW-to-Amazon on the other. Where does programmatic/CTV sit between those poles for this brand — and who in the building argues about the split?</p></div>
+  <p class="small">Thumbnails: iSpot.tv brand archive (/brands/6fr/liquid-death), retrieved Oct 2026. Every spot links to its iSpot page in the speaker notes — play one if the room needs waking up.</p>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Spot pages (video plays there): ispot.tv/ad/TZrA (SB 2025 Safe for Work), /ad/gOW3 (SB 2026 Exploding Heads), /ad/Tshr (Kegs for Pregs), /ad/fxMX (Screamo Grannies), /ad/Bkhb (Arizona Nebraska). iSpot publish-date fields were paywalled in the static pull — titles/order only, so don't quote air dates beyond the Super Bowl labels in the titles themselves.</p>
+  </div>
+</section>
+
+<!-- 7 TARGETING TRANSPARENCY -->
+<section class="slide">
+  <div class="kicker">Client file · what targeting info is public?</div>
+  <h2>The library shows the ads. It hides the audience.</h2>
+  <div class="cols">
+    <div>
+      <h3>What anyone can see (we verified)</h3>
+      <ul>
+        <li>Creative, copy, CTA, landing domain, start/stop dates, platforms, active status.</li>
+        <li><strong>Collation counts</strong> — how many near-duplicate ads sit behind one creative. Liquid Death's biggest: <strong>113 variants</strong> behind a single collated ad. That's a targeting/batch footprint, visible if you know to look.</li>
+        <li>Catalog plumbing: <span class="mono">{{product.brand}}</span> templates, Amazon retail links, creator-style copy ("For the mommas…").</li>
+      </ul>
+    </div>
+    <div>
+      <h3>What the US library will not tell you</h3>
+      <ul>
+        <li>No age, gender, location, or interest targeting for commercial ads — our pull returned empty country targeting and only boilerplate regulation flags.</li>
+        <li>No spend, impressions, or reach for commercial ads (political ads are a different, transparent world — remember the Russian-ads data from the Meta lecture's neighborhood).</li>
+        <li>So: competitor creative is free; competitor strategy must be inferred.</li>
+      </ul>
+      <div class="box warn"><div class="t">Ask Peter</div><p>When you reverse-engineer a competitor from the library, what do you actually look at? And what do you assume competitors can see about <em>your</em> buys that you'd rather they couldn't?</p></div>
+    </div>
+  </div>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Evidence: raw library records for both brands carried targeted_or_reached_countries = empty and regional_regulation_data limited to finserv/Taiwan anti-scam flags (false/false). Collation counts: Liquid Death max 113, next 9; Mastercard max 6. EU library entries can expose more targeting under DSA — good follow-up if Peter buys internationally.</p>
+  </div>
+</section>
+
+<!-- 8 MASTERCARD -->
+<section class="slide">
+  <div class="kicker">Client file · Mastercard</div>
+  <h2>The other pole: priceless, sponsored, everywhere</h2>
+  <div class="statgrid">
+    <div class="stat"><div class="n">113</div><div class="l">ads on the Mastercard Page in the US library — far fewer, far more polished than Liquid Death's 1,419</div></div>
+    <div class="stat blue"><div class="n">LEARN_MORE ×20</div><div class="l">dominant CTA (plus BOOK_TRAVEL ×5 to Priceless travel) — no SHOP_NOW, nothing to put in a cart</div></div>
+    <div class="stat amber"><div class="n">22 / 30</div><div class="l">run Facebook + Instagram together; landings split mastercard.com / priceless.com</div></div>
+  </div>
+  <div class="wall" data-wall="mc_tv"></div>
+  <p>The TV wall is a sponsorship map: Messi (Champions League, Copa América), McLaren F1 "Team Priceless," Stand Up To Cancer (Jonas Brothers, Jennifer Hudson), Lady Gaga, Noah Kahan — plus the small-business line ("The Meat Hook," "Small Business Entrepreneur") that also anchors the current Meta ads.</p>
+  <div class="box"><div class="t">Ask Peter</div><p>Mastercard was named a flagship on the Stagwell Media roster at launch. Is this one inside your Connected Partnerships world? And contrast the jobs: Liquid Death buys attention to sell cans this week; Mastercard buys association to win top-of-wallet for a decade. Same desk, same tools — different religion?</p></div>
+  <p class="small">Sources: Meta Ad Library (Page IDs via keyword pull; 30-creative sample) and iSpot (/brands/Ao6/mastercard, 16 spots), Oct 2026. Roster claim: Oct 2026 Stagwell Media launch coverage. Whether Peter personally trades Mastercard is his to confirm — slide says so out loud.</p>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>HONESTY FLAG: no public source names Peter's personal client book. Liquid Death comes from the instructor; Mastercard is a launch-named Stagwell Media flagship, chosen for contrast. If Peter says it's not his, pivot: "then tell us what a partnerships deal on a sponsorship-heavy brand like this looks like from the supply side." Active Meta ads in sample: small-business campaign started Oct 6, 2026.</p>
+  </div>
+</section>
+
+
+<!-- 4 BIG QUESTIONS I -->
+<section class="slide">
+  <div class="kicker">Big questions · 1 of 3</div>
+  <h2>Bidding, algorithms, and the KPI you're actually chasing</h2>
+  <ul>
+    <li><strong>"Overachieving KPI's"</strong> is in your bio. Which KPI do clients ask for that you wish they'd stop asking for?</li>
+    <li>Custom bid strategies: tell us about one you built that worked — and one that confidently did the wrong thing.</li>
+    <li>When the DSP's optimizer and your gut disagree at 4 p.m. on a Friday, who wins, and what evidence settles it?</li>
+    <li>What's the most expensive reporting illusion you've seen a client fall in love with? (Next month this class writes campaign reports — scare them straight.)</li>
+  </ul>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Bridge line: next month they report a full Trade Desk year (Subaru). Ask Peter what a trader wants from a report that planners never include.</p>
+  </div>
+</section>
+
+<!-- 5 BIG QUESTIONS II -->
+<section class="slide">
+  <div class="kicker">Big questions · 2 of 3</div>
+  <h2>Supply: where the impressions really come from</h2>
+  <ul>
+    <li>Supply-path optimization in plain English: how much duplicated, resold inventory do you still wade through?</li>
+    <li>PMPs and curated deals vs. open exchange — where's the real quality difference in 2026, and where is it just a story?</li>
+    <li>CTV supply: everyone wants it, nobody can measure it cleanly. What do you tell clients?</li>
+    <li>MFAs, junk apps, numeric "site names" in reports — what's your personal blocklist reflex?</li>
+    <li>Signal loss after cookies: what's actually working now — retail data, clean rooms, contextual's comeback?</li>
+  </ul>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Ties to supply-vendor sheet they'll meet in the Subaru report (google/casale/openx dominance, unnamed app IDs) and the Edge/brand-safety memos earlier in term.</p>
+  </div>
+</section>
+
+<!-- 6 BIG QUESTIONS III -->
+<section class="slide">
+  <div class="kicker">Big questions · 3 of 3</div>
+  <h2>AI, measurement, and what breaks next</h2>
+  <ul>
+    <li>Where has AI genuinely changed trading in the last two years — and where is it a sales deck?</li>
+    <li>If the Associate Trader job you started in were posted today, how would the job description be different?</li>
+    <li>Attribution honesty: when three platforms claim the same conversion, who do you believe, and what do you put in the client report?</li>
+    <li>What breaks in programmatic in the next three years that students should be early on?</li>
+  </ul>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Last question is the segment closer — let it breathe, then pivot to careers.</p>
+  </div>
+</section>
+
+<!-- 7 CAREERS: GETTING HIRED -->
+<section class="slide">
+  <div class="kicker">Careers · stealing this honestly</div>
+  <h2>How does someone in this room get your old job?</h2>
+  <ul>
+    <li>This class just finished The Trade Desk's Edge Academy work. From the hiring side: does a certification like that actually move a résumé, or is it table stakes nobody reads?</li>
+    <li>What do you screen for in a junior trader's first 30 seconds — Excel, SQL, stats, writing, curiosity?</li>
+    <li>What's a portfolio move a student can do this semester that would genuinely impress you? (They're building media plans and a real Trade Desk campaign report this fall.)</li>
+    <li>Interview trap: what's the question junior candidates always blow?</li>
+    <li>Baltimore, remote, Stagwell — where do entry-level programmatic jobs actually sit geographically now?</li>
+  </ul>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Edge assignment (2806627) is graded/posted — students can reference it concretely. Push Peter for specifics: tools (Excel? SQL? Python?), DSP names (TTD, DV360, Amazon), and what an Associate Trader owns in month one vs. month twelve.</p>
+  </div>
+</section>
+
+<!-- 8 CAREERS: BOOMERANG -->
+<section class="slide">
+  <div class="kicker">Careers · the boomerang</div>
+  <h2>You left Assembly, then came back in three months</h2>
+  <div class="flow">
+    <div class="step"><div class="s">Assembly</div><div class="v">Associate Trader, 2021</div></div><div class="arr">→</div>
+    <div class="step"><div class="s">Jellyfish</div><div class="v">Manager, Mar–Jun 2022</div></div><div class="arr">→</div>
+    <div class="step"><div class="s">Assembly</div><div class="v">Manager → Senior Manager, 2022–now</div></div>
+  </div>
+  <ul>
+    <li>What did leaving teach you that staying wouldn't have?</li>
+    <li>How do you come back well — what did you do right on the way out the door?</li>
+    <li>What should a 22-year-old copy from your path, and what was just 2021 luck?</li>
+    <li>If you were dropped into this APRD classroom as a senior today, what's your exact 90-day plan?</li>
+  </ul>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Boomerang fact pattern from public profile (Assembly May 2021–Mar 2022; Jellyfish Mar–Jun 2022; Assembly Jun 2022–present). Keep tone warm — it's a story, not an interrogation.</p>
+  </div>
+</section>
+
+<!-- 9 LIGHTNING -->
+<section class="slide">
+  <div class="kicker">Lightning round</div>
+  <h2>Sixty seconds each. No hedging.</h2>
+  <div class="cols">
+    <ul>
+      <li>Best campaign war story you can tell in a classroom.</li>
+      <li>Metric you trust least.</li>
+      <li>One ad-tech acronym that should be retired forever.</li>
+      <li>Excel, SQL, Python, or slides — pick one for a new hire.</li>
+    </ul>
+    <ul>
+      <li>Most underrated supply source right now.</li>
+      <li>What do you pet first when the pacing breaks — a kitty, per bio?</li>
+      <li>Book, newsletter, or feed every student should follow.</li>
+      <li>One sentence to the version of you sitting in this room at CU.</li>
+    </ul>
+  </div>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Energy closer before open Q&amp;A. If time is short, cut to four: war story, metric, skill, one sentence.</p>
+  </div>
+</section>
+
+<!-- 10 OPEN Q&A -->
+<section class="slide">
+  <div class="kicker">Your turn</div>
+  <h2>Questions for Peter</h2>
+  <p class="lead">House rules: name + one question, no preamble essays. Career questions, trading questions, "is this real life" questions — all fair game.</p>
+  <div class="box"><div class="t">Before you leave today</div>
+  <p>Write down the one answer that changed how you'll build your media plan or read a campaign report. Thursday we do Native, and next month you report a full year of real Trade Desk delivery — Peter just told you how the people who run those campaigns think. Steal it.</p></div>
+  <p class="small">Thank you, Peter — CU Boulder → Assembly Global, with a snowplow in between. Peter Brinkman, Senior Manager, VAD (Connected Partnerships), Assembly Global (Stagwell).</p>
+  <div class="notes"><div class="t">Speaker notes</div>
+    <p>Close: thank him, remind class Thu = Native (lecture 15), then Social (Oct 27), Meta (Oct 29), Campaign Reporting: Subaru on The Trade Desk (Nov 3). If a follow-up thank-you/questions channel exists (email/LinkedIn), confirm with Peter live before sharing it.</p>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<div class="hud">
+  <span>Peter Brinkman · APRD 3002 · <span id="counter">1 / 10</span></span>
+  <span>
+    <button id="prevBtn" type="button">← Prev</button>
+    <button id="nextBtn" type="button">Next →</button>
+    <button id="notesBtn" type="button">Notes (N)</button>
+    <button id="fsBtn" type="button">Fullscreen (F)</button>
+  </span>
+</div>
+
+<script>
+const WALLS={
+ld_meta:[["assets/ld_meta/1116435507415628.jpg","Oct 7 · YOU WON'T BELIEVE IT'S NOT CANDY"],["assets/ld_meta/1640295544478670.jpg","Energy · People-Drinking Vampires"],["assets/ld_meta/1288403139602929.jpg","Catalog template ad, IG-only"],["assets/ld_meta/26521200650892001.jpg","Catalog template ad, IG-only"],["assets/ld_meta/955246664086873.jpg","Apr 30 · active, Amazon-bound"],["assets/ld_meta/484906212691963.jpg","2021 · Now at 7-Eleven"],["assets/ld_meta/1392268186430287.jpg","Oct 7 · soda-flavored sparkling"],["assets/ld_meta/2454367678367987.jpg","Liquid Death · Meta library pull"]],
+ld_tv:[["assets/ld_tv/TZrA.jpg","Super Bowl 2025 · Safe for Work"],["assets/ld_tv/gOW3.jpg","Super Bowl 2026 · Exploding Heads"],["assets/ld_tv/Tshr.jpg","Kegs for Pregs · Kylie Kelce"],["assets/ld_tv/TaIE.jpg","One-Tenth of Tony Hawk"],["assets/ld_tv/fxMX.jpg","Screamo Grannies"],["assets/ld_tv/fxN7.jpg","The Chest Blaster"],["assets/ld_tv/Bkhb.jpg","Official Iced Tea of Arizona Nebraska"],["assets/ld_tv/gxEj.jpg","x Pop-Tarts · Carnage Iced Tea"],["assets/ld_tv/faHU.jpg","Tough Odors?"],["assets/ld_tv/gNGW.jpg","The Easy-Drinking Energy Drink"],["assets/ld_tv/gYbV.jpg","Health Nuts"],["assets/ld_tv/BPt3.jpg","Your Thirst Thinks You're an Idiot"]],
+mc_tv:[["assets/mc_tv/BQDV.jpg","For You, the Fans · Messi"],["assets/mc_tv/fsmH.jpg","UEFA Champions League · Messi"],["assets/mc_tv/TIqF.jpg","Dance or Die · Lady Gaga"],["assets/mc_tv/BAUZ.jpg","I Can't Lose · Jonas Brothers"],["assets/mc_tv/1h6s.jpg","Stand Up to Cancer · Jennifer Hudson"],["assets/mc_tv/gnTm.jpg","Mastercard x Noah Kahan"],["assets/mc_tv/SYZA.jpg","The Meat Hook · small business"],["assets/mc_tv/60yJ.jpg","Copa América 2024"]]
+};
+function pesc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+document.querySelectorAll(".wall[data-wall]").forEach(w=>{
+  const items=WALLS[w.dataset.wall]||[];
+  w.innerHTML=items.map(x=>`<figure><img src="${x[0]}" alt="${pesc(x[1])}" loading="lazy"><figcaption>${pesc(x[1])}</figcaption></figure>`).join("");
+});
+const slides=[...document.querySelectorAll(".slide")]; let cur=0;
+function show(i){
+  cur=Math.max(0,Math.min(slides.length-1,i));
+  slides.forEach((s,j)=>s.classList.toggle("active", j===cur));
+  document.getElementById("counter").textContent=(cur+1)+" / "+slides.length;
+  document.getElementById("bar").style.width=((cur+1)/slides.length*100)+"%";
+  slides[cur].scrollTop=0;
+  history.replaceState(null,"","#"+(cur+1));
+}
+document.getElementById("prevBtn").onclick=()=>show(cur-1);
+document.getElementById("nextBtn").onclick=()=>show(cur+1);
+document.getElementById("notesBtn").onclick=()=>document.body.classList.toggle("shownotes");
+document.getElementById("fsBtn").onclick=()=>{
+  if(document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
+};
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight"||e.key===" "||e.key==="PageDown"){e.preventDefault();show(cur+1);}
+  else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();show(cur-1);}
+  else if(e.key==="n"||e.key==="N") document.body.classList.toggle("shownotes");
+  else if(e.key==="f"||e.key==="F") document.getElementById("fsBtn").click();
+  else if(e.key==="Home") show(0); else if(e.key==="End") show(slides.length-1);
+});
+let tx=null;
+document.addEventListener("touchstart",e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener("touchend",e=>{
+  if(tx===null) return; const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>60) show(cur+(dx<0?1:-1)); tx=null;
+},{passive:true});
+show(Math.min(slides.length-1, Math.max(0, (parseInt(location.hash.slice(1))||1)-1)));
+</script>
+</body>
+</html>
+
+
